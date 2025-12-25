@@ -1,31 +1,31 @@
 # Boobs Ticker
 
-Don't sell your soul. Hedge it.
+Your IRL Health Bar. Don't let it hit zero.
 
 Boobs Ticker is a desktop application that sits at the bottom of your screen, looking exactly like a financial news ticker (Bloomberg style).
-But instead of tracking stock prices, it tracks the real-time depreciation of your "Energy" level as you work.
+But instead of tracking stock prices, it tracks the real-time depreciation of your HP as you work.
 
 Every keystroke costs you. Every mouse click drains you.
 Welcome to the real economy.
 
 ## Features
 
-### The Energy Ticker
+### The HP Ticker
 
-Real-time monitoring of your remaining productivity.
+Real-time monitoring of your remaining HP.
 
-* Working (Typing/Clicking): The chart goes RED. Energy crashes.
-* Slacking (Doing Nothing): The chart goes GREEN. Energy recovers slowly.
+* Working (Typing/Clicking): The chart goes RED. HP crashes.
+* Slacking (Doing Nothing): The chart goes GREEN. HP recovers slowly.
 * Marquee News: Scrolling satirical headlines that mock corporate life.
 
 ### Interactive Controls
 
-* Endure +5%: Boost your Energy artificially.
-* Annoyed -5%: Drain Energy manually.
+* Endure +5%: Boost your HP artificially.
+* Annoyed -5%: Drain HP manually.
 
 ### Burnout Warning
 
-What happens when your Energy hits 0%?
+What happens when your HP hits 0%?
 
 * A message appears: "You've been working too hard. Please visit here for your medical certificate."
 * Links open in your browser to https://booby.dev/medical-certificate and https://booby.dev/about.
@@ -64,12 +64,12 @@ npm run tauri build
 ## How to Use
 
 1. Launch the App: It sticks to the bottom of your screen. Always on top.
-2. Work: Watch your Energy drop with each keystroke or click.
-3. Recover: Stop interacting to let Energy recover.
-4. Interact: Use buttons to adjust Energy manually.
-5. Burnout: When Energy reaches 0%, see the warning message and click links.
+2. Work: Watch your HP drop with each keystroke or click.
+3. Recover: Stop interacting to let HP recover.
+4. Interact: Use buttons to adjust HP manually.
+5. Burnout: When HP reaches 0%, see the warning message and click links.
 
-### Configuration (Energy Economics)
+### Configuration (HP Economics)
 
 You can tweak the depreciation rates in src-tauri/src/lib.rs if your energy is cheaper/expensive.
 
