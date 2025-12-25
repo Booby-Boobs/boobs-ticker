@@ -5,6 +5,7 @@ import { openUrl } from "@tauri-apps/plugin-opener";
 import { checkAccessibilityPermission, checkInputMonitoringPermission } from 'tauri-plugin-macos-permissions-api';
 import { ask } from '@tauri-apps/plugin-dialog';
 import { open } from '@tauri-apps/plugin-shell';
+import { type } from '@tauri-apps/plugin-os';
 
 interface TickerData {
   soul: number;
@@ -53,7 +54,14 @@ function App() {
   };
 
   useEffect(() => {
-    verifyPermissions();
+    // Check OS and verify permissions only on macOS
+    const init = async () => {
+      const osType = await type();
+      if (osType === 'macos') {
+        verifyPermissions();
+      }
+    };
+    init();
 
     // Set news once
     if (news.length === 0) {
