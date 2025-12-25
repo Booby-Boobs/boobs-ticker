@@ -30,6 +30,13 @@ fn boost_energy(state: tauri::State<Arc<Mutex<AppState>>>) {
     s.soul = s.soul.min(100.0);
 }
 
+#[tauri::command]
+fn annoy_energy(state: tauri::State<Arc<Mutex<AppState>>>) {
+    let mut s = state.lock().unwrap();
+    s.soul -= 5.0;
+    // No clamp here, allow below 0
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 #[tokio::main]
 pub async fn run() {
@@ -53,7 +60,7 @@ pub async fn run() {
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_positioner::init())
         .manage(state.clone())
-        .invoke_handler(tauri::generate_handler![boost_energy])
+        .invoke_handler(tauri::generate_handler![boost_energy, annoy_energy])
         .setup(move |app| {
             let app_handle = app.handle().clone();
             let state_clone = state.clone();
@@ -125,7 +132,7 @@ async fn monitor_inputs(state: Arc<Mutex<AppState>>, app_handle: AppHandle) {
         let now = Instant::now();
         let inactive_duration = now.duration_since(s.last_activity);
 
-            s.soul -= (s.keys_pressed as f64 * 0.2 + s.clicks as f64 * 1.0 + s.mouse_moves as f64 * 0.001) / 10.0; // key 2%, click 10%
+            s.soul -= (s.keys_pressed as f64 * 1.0 + s.clicks as f64 * 1.0 + s.mouse_moves as f64 * 0.001) / 10.0; // key 10%, click 10%
 
         s.soul = s.soul.clamp(0.0, 100.0); // cap between 0 and 100
 

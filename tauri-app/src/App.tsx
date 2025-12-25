@@ -11,10 +11,12 @@ interface TickerData {
 function App() {
   const [soul, setSoul] = useState(100.0); // Will be updated from backend
   const [news, setNews] = useState<string[]>([]);
-  const [newsIndex, setNewsIndex] = useState(0);
-
   const boostEnergy = async () => {
     await invoke("boost_energy");
+  };
+
+  const annoyEnergy = async () => {
+    await invoke("annoy_energy");
   };
 
   useEffect(() => {
@@ -22,7 +24,6 @@ function App() {
       setSoul(event.payload.soul);
       if (event.payload.news.length > 0 && news.length === 0) {
         setNews(event.payload.news);
-        setNewsIndex(0);
       }
     });
 
@@ -31,30 +32,21 @@ function App() {
     };
   }, [news.length]);
 
-  // Cycle news every 10 seconds
-  useEffect(() => {
-    if (news.length === 0) return;
-    const interval = setInterval(() => {
-      setNewsIndex((prev) => (prev + 1) % news.length);
-    }, 10000);
-    return () => clearInterval(interval);
-  }, [news.length]);
-
 
 
   return (
     <div className="h-36 bg-gray-100 text-black p-2">
         <div className="flex items-center justify-between h-8">
-          <div className={`text-base font-bold font-['Press_Start_2P'] ${soul > 70 ? "text-green-500" : soul > 50 ? "text-orange-500" : soul > 20 ? "text-yellow-500" : soul > 0 ? "text-red-500" : "text-red-700"}`}>
-            Energy: {soul.toFixed(0)}%
-          </div>
-        <div className="flex-1 mx-4 overflow-hidden">
-          <div className="whitespace-nowrap animate-marquee font-['Press_Start_2P'] text-sm">
-            {news.length > 0 && (
-              <span>{news[newsIndex]}</span>
-            )}
-          </div>
-        </div>
+           <div className={`text-xs font-bold font-['Press_Start_2P'] ${soul > 70 ? "text-green-500" : soul > 50 ? "text-orange-500" : soul > 20 ? "text-yellow-500" : soul > 0 ? "text-red-500" : "text-red-700"}`}>
+             HP: {soul.toFixed(0)}%
+           </div>
+         <div className="flex-1 mx-4 overflow-hidden">
+           <div className="whitespace-nowrap animate-marquee font-['Press_Start_2P'] text-sm">
+             {news.length > 0 && (
+               <span>{news.join(" | ")}</span>
+             )}
+           </div>
+         </div>
         <button
           onClick={boostEnergy}
           className="px-2 py-1 bg-pink-500 hover:bg-pink-600 rounded text-sm text-white mr-2"
@@ -62,7 +54,7 @@ function App() {
           Endure +5%
         </button>
          <button
-           onClick={() => setSoul(soul - 5)}
+           onClick={annoyEnergy}
            className="px-2 py-1 bg-gray-300 hover:bg-gray-400 rounded text-sm text-black"
          >
            Annoyed -5%
