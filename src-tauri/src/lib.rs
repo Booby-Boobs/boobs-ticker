@@ -168,7 +168,7 @@ async fn monitor_inputs(state: Arc<Mutex<AppState>>, app_handle: AppHandle) {
         interval.tick().await;
         let mut s = state.lock().unwrap();
 
-        s.soul -= (s.keys_pressed as f64 * 1.0 + s.clicks as f64 * 1.0 + s.mouse_moves as f64 * 0.004) / 10.0; // key 10%, click 10%, mouse 4x
+        s.soul -= (s.keys_pressed as f64 * 0.25 + s.clicks as f64 * 1.0 + s.mouse_moves as f64 * 0.004) / 10.0; // key 2.5%, click 10%, mouse 4x
 
         s.soul = s.soul.clamp(0.0, 100.0); // cap between 0 and 100
 
