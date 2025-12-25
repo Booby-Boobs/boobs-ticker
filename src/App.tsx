@@ -16,17 +16,16 @@ interface TickerData {
 
 
 
-const Ticker = memo(({ news }: { news: string[] }) => (
-  <div className="whitespace-nowrap animate-marquee font-['Press_Start_2P'] text-sm">
-    {news.length > 0 && (
-      <span>{news.join(" | ")}</span>
-    )}
+const Ticker = memo(({ text, duration }: { text: string, duration: number }) => (
+  <div key={text} className="whitespace-nowrap font-['Press_Start_2P'] text-sm" style={{ animation: `marquee ${duration / 1000}s linear` }}>
+    {text}
   </div>
 ));
 
 function App() {
   const [soul, setSoul] = useState(100.0); // Will be updated from backend
   const [news, setNews] = useState<string[]>([]);
+  const [currentNewsIndex, setCurrentNewsIndex] = useState(0);
   const [stats, setStats] = useState({ total_time: 0, keys_total: 0, clicks_total: 0, mouse_total: 0 });
   const boostEnergy = async () => {
     await invoke("boost_energy");
@@ -53,7 +52,7 @@ function App() {
         "Programmer union demands 'mandatory naptime' clause in contracts",
         "Silicon Valley therapists report 300% increase in 'code fatigue' cases",
         "Big Tech announces 'productivity guilt' as new revenue stream",
-        "Developer tools company sued for 'encouraging overwork'",
+        "Tech tools company sued for 'encouraging overwork'",
         "New app promises 'work less, achieve more' – downloads hit zero",
         "Corporate wellness programs now include 'HP recovery sessions'",
         "Stock market indexes now track developer happiness levels",
@@ -133,6 +132,16 @@ function App() {
     };
   }, [news.length]);
 
+  useEffect(() => {
+    if (news.length > 0) {
+      const currentDuration = Math.max(15000, (news[currentNewsIndex]?.length || 0) * 300);
+      const interval = setInterval(() => {
+        setCurrentNewsIndex((prev) => (prev + 1) % news.length);
+      }, currentDuration);
+      return () => clearInterval(interval);
+    }
+  }, [news, currentNewsIndex]);
+
   const verifyPermissions = async () => {
     // 1. アクセシビリティ権限 (マウス/一般キー用)
     const isAccessibility = await checkAccessibilityPermission();
@@ -172,15 +181,17 @@ function App() {
 
 
 
+  const duration = news.length > 0 ? Math.max(15000, (news[currentNewsIndex]?.length || 0) * 300) : 15000;
+
   return (
     <div className="h-36 bg-gray-100 text-black p-2">
         <div className="flex items-center justify-between h-8">
            <div className={`text-xs font-bold font-['Press_Start_2P'] ${soul > 70 ? "text-green-500" : soul > 50 ? "text-orange-500" : soul > 20 ? "text-yellow-500" : soul > 0 ? "text-red-500" : "text-red-700"}`}>
              HP: {soul.toFixed(0)}%
            </div>
-          <div className="flex-1 mx-4 overflow-hidden">
-            <Ticker news={news} />
-          </div>
+           <div className="flex-1 mx-4 overflow-hidden">
+             <Ticker text={news[currentNewsIndex] || ""} duration={duration} />
+           </div>
         <button
           onClick={boostEnergy}
           className="px-2 py-1 bg-pink-500 hover:bg-pink-600 rounded text-sm text-white mr-2"
