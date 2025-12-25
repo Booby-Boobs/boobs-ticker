@@ -1,33 +1,33 @@
+use std::env;
 use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
 use tauri::{AppHandle, Manager, Emitter};
 use tokio::time;
 use device_query::{DeviceQuery, DeviceState, Keycode, MouseState};
-use rand::seq::SliceRandom;
 
 
 #[derive(Clone, serde::Serialize)]
-struct TickerData {
-    soul: f64,
-    news: Vec<String>,
-    total_time: u64, // in minutes
-    keys_total: u64,
-    clicks_total: u64,
-    mouse_total: f64, // pixel distance
+pub struct TickerData {
+    pub soul: f64,
+    pub total_time: u64, // in minutes
+    pub keys_total: u64,
+    pub clicks_total: u64,
+    pub mouse_total: f64, // pixel distance
 }
 
 #[derive(Clone)]
-struct AppState {
-    soul: f64,
-    last_activity: Instant,
-    keys_pressed: u64,
-    clicks: u64,
-    mouse_moves: u64,
-    news: Vec<String>,
-    start_time: Instant,
-    keys_total: u64,
-    clicks_total: u64,
-    mouse_total: f64, // pixel distance
+pub struct AppState {
+    pub soul: f64,
+    pub last_activity: Instant,
+    pub keys_pressed: u64,
+    pub clicks: u64,
+    pub mouse_moves: u64,
+    pub start_time: Instant,
+    pub keys_total: u64,
+    pub clicks_total: u64,
+    pub mouse_total: f64, // pixel distance
+    pub last_mouse_x: f64,
+    pub last_mouse_y: f64,
 }
 
 
@@ -49,11 +49,7 @@ fn annoy_energy(state: tauri::State<Arc<Mutex<AppState>>>) {
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 #[tokio::main]
 pub async fn run() {
-    let mut news: Vec<String> = serde_json::from_str(include_str!("../news.json")).unwrap_or_default();
-    let mut rng = rand::thread_rng();
-    news.shuffle(&mut rng);
-
-    let initial_energy: f64 = std::env::var("INITIAL_ENERGY")
+    let initial_energy: f64 = env::var("INITIAL_ENERGY")
         .unwrap_or_else(|_| "100".to_string())
         .parse()
         .unwrap_or(100.0);
@@ -64,11 +60,12 @@ pub async fn run() {
         keys_pressed: 0,
         clicks: 0,
         mouse_moves: 0,
-        news,
         start_time: Instant::now(),
         keys_total: 0,
         clicks_total: 0,
         mouse_total: 0.0,
+        last_mouse_x: 0.0,
+        last_mouse_y: 0.0,
     }));
 
     tauri::Builder::default()
@@ -185,7 +182,6 @@ async fn monitor_inputs(state: Arc<Mutex<AppState>>, app_handle: AppHandle) {
         let elapsed = s.start_time.elapsed().as_secs() / 60;
         let data = TickerData {
             soul: s.soul,
-            news: s.news.clone(),
             total_time: elapsed,
             keys_total: s.keys_total,
             clicks_total: s.clicks_total,

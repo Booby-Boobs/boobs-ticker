@@ -8,7 +8,6 @@ import { open } from '@tauri-apps/plugin-shell';
 
 interface TickerData {
   soul: number;
-  news: string[];
   total_time: number;
   keys_total: number;
   clicks_total: number;
@@ -40,6 +39,85 @@ function App() {
   useEffect(() => {
     verifyPermissions();
 
+    // Set news once
+    if (news.length === 0) {
+      const allNews = [
+        "Market crashes as developer productivity plummets",
+        "Stocks soar on employee burnout rumors",
+        "New study: Coding without breaks leads to 100% HP loss",
+        "Tech layoffs spike after productivity tracking scandal",
+        "AI replaces developers, but forgets to monitor its own HP",
+        "Remote work boom: Home office casualties rise 200%",
+        "Startup fails spectacularly after founder works 72 hours straight",
+        "Venture capital flees companies with 'no work-life balance' policies",
+        "Programmer union demands 'mandatory naptime' clause in contracts",
+        "Silicon Valley therapists report 300% increase in 'code fatigue' cases",
+        "Big Tech announces 'productivity guilt' as new revenue stream",
+        "Developer tools company sued for 'encouraging overwork'",
+        "New app promises 'work less, achieve more' – downloads hit zero",
+        "Corporate wellness programs now include 'HP recovery sessions'",
+        "Stock market indexes now track developer happiness levels",
+        "Breaking: Company culture shifts from 'hustle' to 'human'",
+        "Tech conference keynote: 'Why your HP bar should never hit zero'",
+        "Startup founder retires after realizing 'work-life balance' exists",
+        "AI predicts: Human developers will be obsolete by 2025... or sooner",
+        "Corporate boardrooms now equipped with 'empathy chips'",
+        "New law: Companies must provide 'digital detox' days",
+        "Tech giants race to develop 'anti-burnout' software",
+        "Employee handbook updated: 'HP > KPIs'",
+        "Viral tweet: 'My HP bar is lower than my coffee levels'",
+        "Startup culture evolves: 'Sleep is the new productivity hack'",
+        "Big Tech dividend: 'Mental health days' now taxable",
+        "Developer confession: 'I thought red HP bar was just aesthetic'",
+        "Corporate retreat theme: 'Recharging our internal batteries'",
+        "New metric: Employee satisfaction measured in HP points",
+        "Tech unicorn valuation drops after 'overwork scandal'",
+        "Breaking: Company adopts '4-day workweek'... effective immediately",
+        "AI assistant reminds: 'Your HP is not infinite'",
+        "Corporate slogan change: 'Work smarter, not harder... or longer'",
+        "Developer memes peak: 'My HP bar is my mood ring'",
+        "Startup pitch: 'We help you maintain your HP while coding'",
+        "Tech conference panel: 'The future of work-life balance'",
+        "Corporate email: 'Mandatory fun breaks now enforced'",
+        "Venture capitalist insight: 'Invest in people, not just code'",
+        "Developer diary: 'Day 1: HP 100%. Day 365: HP 0%'",
+        "New app category: 'HP management tools'",
+        "Corporate policy: 'No meetings during HP recovery time'",
+        "Tech influencer: 'My HP bar is my productivity barometer'",
+        "Startup motto: 'Code fast, live slow'",
+        "Corporate wellness: 'Yoga for your HP bar'",
+        "Developer confession: 'I coded through my red HP warning'",
+        "Big Tech announcement: 'HP tracking banned in workplaces'",
+        "New study: 'Happy developers ship better code'",
+        "Corporate retreat activity: 'HP bar meditation'",
+        "Tech startup: 'We make HP bars for a living'",
+        "Developer tip: 'Take breaks before your HP hits zero'",
+        "Corporate diversity initiative: 'Inclusive HP management'",
+        "Tech conference: 'HP bars: The next big UI trend'",
+        "Startup culture: 'Our HP bars are always green'",
+        "Corporate memo: 'HP > overtime pay'",
+        "Developer wisdom: 'A green HP bar is worth a thousand commits'",
+        "Tech giant: 'Our engineers' HP bars are our biggest asset'",
+        "New app: 'HP bar simulator for managers'",
+        "Corporate policy: 'HP checks during performance reviews'",
+        "Developer burnout: 'When your HP bar becomes your enemy'",
+        "Tech startup pitch: 'Revolutionizing HP management'",
+        "Corporate email signature: 'Sent with full HP'",
+        "Developer meme: 'My HP bar after debugging for 8 hours'",
+        "Tech conference talk: 'The psychology of HP bars'",
+        "Startup perk: 'Unlimited HP recovery days'",
+        "Corporate wellness program: 'HP bar yoga sessions'",
+        "Developer confession: 'I ignored my red HP bar'",
+        "Big Tech initiative: 'HP bar transparency for all employees'",
+        "New metric: 'Team HP average'",
+        "Tech unicorn: 'Our valuation is tied to employee HP'",
+        "Corporate retreat: 'HP bar team-building exercises'",
+        "Developer advice: 'Monitor your HP, not just your code'"
+      ];
+      const shuffled = [...allNews].sort(() => Math.random() - 0.5);
+      setNews(shuffled);
+    }
+
     const unlisten = listen<TickerData>("ticker-update", (event) => {
       setSoul(event.payload.soul);
       setStats({
@@ -48,9 +126,6 @@ function App() {
         clicks_total: event.payload.clicks_total,
         mouse_total: event.payload.mouse_total,
       });
-      if (event.payload.news.length > 0 && news.length === 0) {
-        setNews(event.payload.news);
-      }
     });
 
     return () => {
