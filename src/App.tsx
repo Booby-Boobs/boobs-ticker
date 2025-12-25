@@ -68,19 +68,29 @@ function App() {
     console.log(`Accessibility: ${isAccessibility}, InputMonitoring: ${isInputMonitoring}`);
 
     if (!isAccessibility || !isInputMonitoring) {
-      const confirmed = await ask(
-        'Boobs Ticker needs both "Accessibility" and "Input Monitoring" permissions to track your productivity.\n\nPlease enable them in System Settings.',
-        {
-          title: 'Permissions Required',
-          kind: 'warning',
-          okLabel: 'Open Settings',
-          cancelLabel: 'Later'
-        }
-      );
+      let message = 'Boobs Ticker needs the following permissions to track your productivity:\n\n';
+      if (!isAccessibility) message += '- Accessibility (for mouse and special keys)\n';
+      if (!isInputMonitoring) message += '- Input Monitoring (for alphabet keys A-Z)\n\n';
+      message += 'Please enable them in System Settings > Privacy & Security.';
+
+      const confirmed = await ask(message, {
+        title: 'Permissions Required',
+        kind: 'warning',
+        okLabel: 'Open Settings',
+        cancelLabel: 'Later'
+      });
 
       if (confirmed) {
-        // 設定画面の「プライバシーとセキュリティ」を開く
-        await open('x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility');
+        // 不足している権限に応じてページを開く
+        if (!isAccessibility) {
+          await open('x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility');
+        } else if (!isInputMonitoring) {
+          // 入力監視のページを試す (安定していない場合がある)
+          await open('x-apple.systempreferences:com.apple.preference.security?Privacy_ListenEvent');
+        } else {
+          // 両方不足の場合、アクセシビリティページを開く
+          await open('x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility');
+        }
       }
     }
   };
