@@ -27,4 +27,7 @@ device_query = "4.0"
 rodio = "0.17"
 tokio = { version = "1", features = ["full"] }
 rand = "0.8"
+tauri-plugin-macos-permissions = "2.3.0"
+tauri-plugin-dialog = "2.4.2"
+tauri-plugin-shell = "2.3.3"
 

@@ -74,6 +74,9 @@ pub async fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_positioner::init())
+        .plugin(tauri_plugin_macos_permissions::init())
+        .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_shell::init())
         .manage(state.clone())
         .invoke_handler(tauri::generate_handler![boost_energy, annoy_energy])
         .setup(move |app| {

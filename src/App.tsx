@@ -2,6 +2,9 @@ import { useState, useEffect, memo } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { openUrl } from "@tauri-apps/plugin-opener";
+import { checkAccessibilityPermission, checkInputMonitoringPermission } from 'tauri-plugin-macos-permissions-api';
+import { ask } from '@tauri-apps/plugin-dialog';
+import { open } from '@tauri-apps/plugin-shell';
 
 interface TickerData {
   soul: number;
@@ -35,6 +38,8 @@ function App() {
   };
 
   useEffect(() => {
+    verifyPermissions();
+
     const unlisten = listen<TickerData>("ticker-update", (event) => {
       setSoul(event.payload.soul);
       setStats({
@@ -52,6 +57,33 @@ function App() {
       unlisten.then((fn) => fn());
     };
   }, [news.length]);
+
+  const verifyPermissions = async () => {
+    // 1. アクセシビリティ権限 (マウス/一般キー用)
+    const isAccessibility = await checkAccessibilityPermission();
+
+    // 2. 入力監視権限 (A-Zキー用) - ここが重要
+    const isInputMonitoring = await checkInputMonitoringPermission();
+
+    console.log(`Accessibility: ${isAccessibility}, InputMonitoring: ${isInputMonitoring}`);
+
+    if (!isAccessibility || !isInputMonitoring) {
+      const confirmed = await ask(
+        'Boobs Ticker needs both "Accessibility" and "Input Monitoring" permissions to track your productivity.\n\nPlease enable them in System Settings.',
+        {
+          title: 'Permissions Required',
+          kind: 'warning',
+          okLabel: 'Open Settings',
+          cancelLabel: 'Later'
+        }
+      );
+
+      if (confirmed) {
+        // 設定画面の「プライバシーとセキュリティ」を開く
+        await open('x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility');
+      }
+    }
+  };
 
 
 
