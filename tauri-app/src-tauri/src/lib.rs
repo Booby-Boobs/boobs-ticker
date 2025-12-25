@@ -3,12 +3,17 @@ use std::time::{Duration, Instant};
 use tauri::{AppHandle, Manager, Emitter};
 use tokio::time;
 use rdev::{listen, Event, EventType};
+use rand::seq::SliceRandom;
 
 
 #[derive(Clone, serde::Serialize)]
 struct TickerData {
     soul: f64,
     news: Vec<String>,
+    total_time: u64, // in minutes
+    keys_total: u64,
+    clicks_total: u64,
+    mouse_total: f64, // pixel distance
 }
 
 #[derive(Clone)]
@@ -19,6 +24,12 @@ struct AppState {
     clicks: u64,
     mouse_moves: u64,
     news: Vec<String>,
+    start_time: Instant,
+    keys_total: u64,
+    clicks_total: u64,
+    mouse_total: f64, // pixel distance
+    last_mouse_x: f64,
+    last_mouse_y: f64,
 }
 
 
@@ -40,7 +51,9 @@ fn annoy_energy(state: tauri::State<Arc<Mutex<AppState>>>) {
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 #[tokio::main]
 pub async fn run() {
-    let news: Vec<String> = serde_json::from_str(include_str!("../news.json")).unwrap_or_default();
+    let mut news: Vec<String> = serde_json::from_str(include_str!("../news.json")).unwrap_or_default();
+    let mut rng = rand::thread_rng();
+    news.shuffle(&mut rng);
 
     let initial_energy: f64 = std::env::var("INITIAL_ENERGY")
         .unwrap_or_else(|_| "100".to_string())
@@ -54,6 +67,12 @@ pub async fn run() {
         clicks: 0,
         mouse_moves: 0,
         news,
+        start_time: Instant::now(),
+        keys_total: 0,
+        clicks_total: 0,
+        mouse_total: 0.0,
+        last_mouse_x: 0.0,
+        last_mouse_y: 0.0,
     }));
 
     tauri::Builder::default()
@@ -102,13 +121,27 @@ async fn monitor_inputs(state: Arc<Mutex<AppState>>, app_handle: AppHandle) {
             match event.event_type {
                 EventType::KeyPress(_) => {
                     s.keys_pressed += 1;
+                    s.keys_total += 1;
                     s.last_activity = Instant::now();
                 }
                 EventType::ButtonPress(_) => {
                     s.clicks += 1;
+                    s.clicks_total += 1;
                     s.last_activity = Instant::now();
                 }
-                EventType::MouseMove { .. } => {
+                EventType::MouseMove { x, y } => {
+                    let x = x as f64;
+                    let y = y as f64;
+                    if s.last_mouse_x == 0.0 && s.last_mouse_y == 0.0 {
+                        s.last_mouse_x = x;
+                        s.last_mouse_y = y;
+                    } else {
+                        let dx = (x - s.last_mouse_x).abs();
+                        let dy = (y - s.last_mouse_y).abs();
+                        s.mouse_total += dx + dy; // Manhattan distance in pixels
+                        s.last_mouse_x = x;
+                        s.last_mouse_y = y;
+                    }
                     s.mouse_moves += 1;
                     s.last_activity = Instant::now();
                 }
@@ -132,7 +165,7 @@ async fn monitor_inputs(state: Arc<Mutex<AppState>>, app_handle: AppHandle) {
         let now = Instant::now();
         let inactive_duration = now.duration_since(s.last_activity);
 
-            s.soul -= (s.keys_pressed as f64 * 1.0 + s.clicks as f64 * 1.0 + s.mouse_moves as f64 * 0.001) / 10.0; // key 10%, click 10%
+            s.soul -= (s.keys_pressed as f64 * 1.0 + s.clicks as f64 * 1.0 + s.mouse_moves as f64 * 0.004) / 10.0; // key 10%, click 10%, mouse 4x
 
         s.soul = s.soul.clamp(0.0, 100.0); // cap between 0 and 100
 
@@ -143,9 +176,14 @@ async fn monitor_inputs(state: Arc<Mutex<AppState>>, app_handle: AppHandle) {
 
 
 
+        let elapsed = s.start_time.elapsed().as_secs() / 60;
         let data = TickerData {
             soul: s.soul,
             news: s.news.clone(),
+            total_time: elapsed,
+            keys_total: s.keys_total,
+            clicks_total: s.clicks_total,
+            mouse_total: s.mouse_total,
         };
 
         app_handle_clone.emit("ticker-update", data).unwrap();
