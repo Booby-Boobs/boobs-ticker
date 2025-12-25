@@ -27,7 +27,13 @@ function App() {
   const [news, setNews] = useState<string[]>([]);
   const [currentNewsIndex, setCurrentNewsIndex] = useState(0);
   const [stats, setStats] = useState({ total_time: 0, keys_total: 0, clicks_total: 0, mouse_total: 0 });
-  const [isDark, setIsDark] = useState(true);
+  const [isDark, setIsDark] = useState(() => {
+
+    const saved = localStorage.getItem('darkMode');
+
+    return saved !== null ? JSON.parse(saved) : true;
+
+  });
   const boostEnergy = async () => {
     await invoke("boost_energy");
   };
@@ -36,7 +42,15 @@ function App() {
     await invoke("annoy_energy");
   };
 
-  const toggleDark = () => setIsDark(!isDark);
+  const toggleDark = () => {
+
+    const newValue = !isDark;
+
+    setIsDark(newValue);
+
+    localStorage.setItem('darkMode', JSON.stringify(newValue));
+
+  };
 
   useEffect(() => {
     verifyPermissions();
